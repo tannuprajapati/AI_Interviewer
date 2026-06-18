@@ -94,14 +94,21 @@ const handleCall = async () => {
   try {
     setCallStatus(CallStatus.CONNECTING);
 
+    console.log(
+      "Assistant:",
+      process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID
+    );
+
     await vapi.start(
       process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID!
     );
 
   } catch (error) {
-    console.error(error);
-    setCallStatus(CallStatus.INACTIVE);
+    console.error("Error:", error);
   }
+
+  console.log("Token:", process.env.NEXT_PUBLIC_VAPI_WEB_TOKEN);
+console.log("Assistant:", process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID);
 };
 
 
