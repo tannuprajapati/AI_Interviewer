@@ -39,7 +39,13 @@ const Agent = ({
     };
 
     const onCallEnd = () => {
+      console.log("Interview ended");
+
       setCallStatus(CallStatus.FINISHED);
+
+      setTimeout(() => {
+        router.push("/");
+      }, 1000);
     };
     const onMessage = (message: Message) => {
       if (
@@ -99,10 +105,8 @@ const Agent = ({
 
 
   const handleDisconnect = () => {
-    setCallStatus(CallStatus.FINISHED);
     vapi.stop();
   };
-
   return (
     <>
       <div className="call-view">
