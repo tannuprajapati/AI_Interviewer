@@ -38,15 +38,20 @@ const Agent = ({
       setCallStatus(CallStatus.ACTIVE);
     };
 
-    const onCallEnd = () => {
-      console.log("Interview ended");
+   const onCallEnd = () => {
+  console.log("CALL ENDED");
 
-      setCallStatus(CallStatus.FINISHED);
+  setCallStatus(CallStatus.FINISHED);
 
-      setTimeout(() => {
-        router.push("/");
-      }, 1000);
-    };
+  alert("Call ended");
+
+  setTimeout(() => {
+    console.log("REDIRECTING");
+    router.push("/");
+  }, 1000);
+};
+
+
     const onMessage = (message: Message) => {
       if (
         message.type === "transcript" &&
@@ -104,9 +109,15 @@ const Agent = ({
   };
 
 
-  const handleDisconnect = () => {
-    vapi.stop();
-  };
+const handleDisconnect = () => {
+  vapi.stop();
+
+  setTimeout(() => {
+    router.push("/");
+  }, 500);
+};
+
+
   return (
     <>
       <div className="call-view">
