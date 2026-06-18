@@ -30,7 +30,6 @@ const Agent = ({
 }: AgentProps) => {
   const router = useRouter();
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
-  const [messages, setMessages] = useState<SavedMessage[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [lastMessage, setLastMessage] = useState<string>("");
 
@@ -42,29 +41,22 @@ const Agent = ({
     const onCallEnd = () => {
       setCallStatus(CallStatus.FINISHED);
     };
-
-   const onMessage = (message: Message) => {
-  if (
-    message.type === "transcript" &&
-    message.transcriptType === "final"
-  ) {
-    const newMessage = {
-      role: message.role,
-      content: message.transcript,
+    const onMessage = (message: Message) => {
+      if (
+        message.type === "transcript" &&
+        message.transcriptType === "final"
+      ) {
+        setLastMessage(message.transcript);
+      }
     };
 
-    setMessages((prev) => [...prev, newMessage]);
-    setLastMessage(message.transcript);
-  }
-};
-
     const onSpeechStart = () => {
-      console.log("speech start");
+
       setIsSpeaking(true);
     };
 
     const onSpeechEnd = () => {
-      console.log("speech end");
+
       setIsSpeaking(false);
     };
 
@@ -89,27 +81,21 @@ const Agent = ({
     };
   }, []);
 
- 
-const handleCall = async () => {
-  try {
-    setCallStatus(CallStatus.CONNECTING);
 
-    console.log(
-      "Assistant:",
-      process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID
-    );
+  const handleCall = async () => {
+    if (callStatus === CallStatus.CONNECTING) return;
 
-    await vapi.start(
-      process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID!
-    );
+    try {
+      setCallStatus(CallStatus.CONNECTING);
 
-  } catch (error) {
-    console.error("Error:", error);
-  }
-
-  console.log("Token:", process.env.NEXT_PUBLIC_VAPI_WEB_TOKEN);
-console.log("Assistant:", process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID);
-};
+      await vapi.start(
+        process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID!
+      );
+    } catch (error) {
+      console.error(error);
+      setCallStatus(CallStatus.INACTIVE);
+    }
+  };
 
 
   const handleDisconnect = () => {
@@ -150,41 +136,50 @@ console.log("Assistant:", process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID);
         </div>
       </div>
 
-      {messages.length > 0 && (
+      {lastMessage && (
         <div className="transcript-border">
           <div className="transcript">
-            <p
-              key={lastMessage}
-              className={cn(
-                "transition-opacity duration-500 opacity-0",
-                "animate-fadeIn opacity-100"
-              )}
-            >
-              {lastMessage}
-            </p>
+            <div className="flex gap-2 items-start">
+              <span>🤖</span>
+              <p className="animate-fadeIn">
+                {lastMessage}
+              </p>
+            </div>
           </div>
         </div>
       )}
 
-     <div className="flex justify-center mt-8">
-  {callStatus !== CallStatus.ACTIVE ? (
-    <button
-      onClick={handleCall}
-      className="px-6 py-3 bg-green-600 rounded-lg"
-    >
-      Start Interview
-    </button>
-  ) : (
-    <button
-      onClick={handleDisconnect}
-      className="px-6 py-3 bg-red-600 rounded-lg"
-    >
-      End Interview
-    </button>
-  )}
-</div>
+      <div className="text-center mt-4">
+        {callStatus === CallStatus.CONNECTING && (
+          <p className="text-yellow-400">Connecting...</p>
+        )}
+
+        {callStatus === CallStatus.ACTIVE && (
+          <p className="text-green-400">
+            {isSpeaking ? "🎤 AI Speaking..." : "🎧 Listening..."}
+          </p>
+        )}
+      </div>
+
+      <div className="flex justify-center mt-6">
+        {callStatus !== CallStatus.ACTIVE ? (
+          <button
+            onClick={handleCall}
+            className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg"
+          >
+            Start Interview
+          </button>
+        ) : (
+          <button
+            onClick={handleDisconnect}
+            className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg"
+          >
+            End Interview
+          </button>
+        )}
+      </div>
     </>
   );
 };
- 
+
 export default Agent;
