@@ -43,12 +43,20 @@ const Agent = ({
       setCallStatus(CallStatus.FINISHED);
     };
 
-    const onMessage = (message: Message) => {
-      if (message.type === "transcript" && message.transcriptType === "final") {
-        const newMessage = { role: message.role, content: message.transcript };
-        setMessages((prev) => [...prev, newMessage]);
-      }
+   const onMessage = (message: Message) => {
+  if (
+    message.type === "transcript" &&
+    message.transcriptType === "final"
+  ) {
+    const newMessage = {
+      role: message.role,
+      content: message.transcript,
     };
+
+    setMessages((prev) => [...prev, newMessage]);
+    setLastMessage(message.transcript);
+  }
+};
 
     const onSpeechStart = () => {
       console.log("speech start");
@@ -82,7 +90,19 @@ const Agent = ({
   }, []);
 
  
+const handleCall = async () => {
+  try {
+    setCallStatus(CallStatus.CONNECTING);
 
+    await vapi.start(
+      process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID!
+    );
+
+  } catch (error) {
+    console.error(error);
+    setCallStatus(CallStatus.INACTIVE);
+  }
+};
 
 
   const handleDisconnect = () => {
@@ -139,7 +159,23 @@ const Agent = ({
         </div>
       )}
 
-     
+     <div className="flex justify-center mt-8">
+  {callStatus !== CallStatus.ACTIVE ? (
+    <button
+      onClick={handleCall}
+      className="px-6 py-3 bg-green-600 rounded-lg"
+    >
+      Start Interview
+    </button>
+  ) : (
+    <button
+      onClick={handleDisconnect}
+      className="px-6 py-3 bg-red-600 rounded-lg"
+    >
+      End Interview
+    </button>
+  )}
+</div>
     </>
   );
 };
